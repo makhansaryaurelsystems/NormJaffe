@@ -50,7 +50,7 @@ jobs:
         run: |
           echo "Generating HTML files from README.md..."
 
-          python assets/builders/static_site_generator_2.py
+          python ${{ env.SITE_PATH }}builders/static_site_generator_2.py
           
           echo "HTML generation complete!"
       
@@ -71,7 +71,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add $OUTPUT_PATH # assets/site/style/css/main.css assets/site/style/css/main.css.map
+          git add ${{ env.OUTPUT_PATH }} # assets/site/style/css/main.css assets/site/style/css/main.css.map
           git diff --staged --quiet || git commit -m "Auto-generate HTML [skip ci]"
       
       - name: Push changes
@@ -86,14 +86,14 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: $OUTPUT_PATH
+          path: ${{ env.OUTPUT_PATH }}
       
       - name: Build Summary
         if: always()
         run: |
           echo "### Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f "$OUTPUT_PATH/index.html" ]; then
+          if [ -f "${{ env.OUTPUT_PATH }}index.html" ]; then
             echo "HTML files generated successfully" >> $GITHUB_STEP_SUMMARY
           else
             echo "HTML generation failed" >> $GITHUB_STEP_SUMMARY
