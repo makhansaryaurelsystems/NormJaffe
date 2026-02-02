@@ -21,9 +21,11 @@ jobs:
     name: Update README.md and Resume.pdf
     runs-on: ubuntu-latest
     env:
-      output_file: 'README.md'
-      output_pdf: 'Resume.pdf'
-      output_file_dummy: 'Resume_dummy.md'
+      main_readme: 'README.md'
+      pdf_from_resume_md: 'Resume.pdf'
+      resume_md: 'Resume.md'
+      input_dir: 'assets/for_readme/'
+      logo_dir: 'assets/logos/'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,44 +35,27 @@ jobs:
       
       - name: Build README files from markdown files
         run: |
-          set -euo pipefail
-
-          input_dir="assets/for_readme/"
-
-          # Variables output_file and output_file_dummy are defined in job env 
-
-          # Array of markdown files to concatenate
-          #files=(
-          #  "introduction.md"
-          #  "education.md"
-          #  "experience.md"
-          #  "awards.md"
-          #  "talks.md"
-          #  "publications.md"
-          #)
+          set -euo pipef  ail
 
           # Automatically find and sort markdown files by their numeric prefix (00_, 01_, etc.)
-          files=($(find "$input_dir" -name "*.md" -type f -printf "%f\n" | sort -V))
-          
+          files=($(find "${{ env.input_dir }}" -name "*.md" -type f -printf "%f\n" | sort -V))
+
           # Create or clear output files
-          > "${output_file}"
-          > "${output_file_dummy}"
+          > "${{ env.main_readme }}"
+          > "${{ env.resume_md }}"
 
-          if [ -f "${input_dir}notice.md" ]; then
-            cat "${input_dir}notice.md" >> "${output_file}"
-          else
-            echo "Warning: notice.md not found, skipping header"
-          fi
-
+          # compling md files 
           for file in "${files[@]}"; do
 
-            filepath="${input_dir}${file}"
+            filepath="${{ env.input_dir }}${file}"
 
-            cat "${filepath}" >> "${output_file}"
-            echo -e "\n\n" >> "${output_file}"
+            cat "${filepath}" >> "${{ env.main_readme }}"
+            echo -e "\n\n" >> "${{ env.main_readme }}"
 
-            cat "${filepath}" >> "${output_file_dummy}"
-            echo -e "\n\n" >> "${output_file_dummy}"
+            if [[ "$file" != 00_* ]]; then
+              cat "${filepath}" >> "${{ env.resume_md }}"
+              echo -e "\n\n" >> "${{ env.resume_md }}"
+            fi
 
           done
           
@@ -84,12 +69,12 @@ jobs:
           \usepackage{xcolor}
           \usepackage{fancyhdr}
           \pagestyle{fancy}
-          \fancyhead[L]{\large\textbf{Milad Asgarpour Khansary (MAK)}}
+          \fancyhead[L]{\large\textbf{Norman Jaffe}}
           \fancyhead[C]{}
           \fancyhead[R]{}
           \fancyfoot[L]{}
           \fancyfoot[C]{\thepage}
-          \fancyfoot[R]{\tiny\scalebox{1.0}{\textcolor{red}{Generated on \today\ by \includegraphics[height=1.25ex]{assets/logos/GitHub.png}github-actions[bot]}}}
+          \fancyfoot[R]{\tiny\scalebox{1.0}{\textcolor{red}{Generated on \today\ by \includegraphics[height=1.25ex]{${{ env.logo_dir }}/GitHub.png}github-actions[bot]}}}
           \renewcommand{\headrulewidth}{0.4pt}
           \renewcommand{\footrulewidth}{0.4pt}
           EOF
@@ -104,7 +89,7 @@ jobs:
         with:
           args: >-
             --from=gfm
-            --output=${{ env.output_pdf }}
+            --output=${{ env.pdf_from_resume_md }}
             --pdf-engine=xelatex
             --include-in-header=header.tex
             --variable=geometry:a4paper
@@ -116,18 +101,18 @@ jobs:
             --highlight-style=tango
             --standalone
             --fail-if-warnings
-            ${{ env.output_file_dummy }}
+            ${{ env.resume_md }}
 
       - name: Check for changes
         id: check_changes
         run: |
-          git diff --exit-code ${{ env.output_file }} ${{ env.output_pdf }} || echo "changes=true" >> $GITHUB_OUTPUT
+          git diff --exit-code ${{ env.main_readme }} ${{ env.pdf_from_resume_md }} || echo "changes=true" >> $GITHUB_OUTPUT
      
       - name: Clean up temporary files
         run: |
-          rm -f header.tex ${output_file_dummy}
+          rm -f header.tex ${{ env.resume_md }}
 
-      - name: Commit and push README changes
+      - name: Commit and push changes
         if: steps.check_changes.outputs.changes == 'true'
         run: |
           set -euo pipefail
@@ -135,11 +120,13 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add "${output_file}" "${output_pdf}"
+          git add "${{ env.main_readme }}" "${{ env.pdf_from_resume_md }}"
           
           staged_files=$(git diff --cached --name-only)
+          echo "Staged files: $staged_files"
+
           for staged_file in $staged_files; do
-            if [[ ! "$staged_file" =~ ^(${output_file}|${output_pdf})$ ]]; then
+            if [[ ! "$staged_file" =~ ^(${env.main_readme}|${env.pdf_from_resume_md})$ ]]; then
               echo "Error: Unexpected file staged: $staged_file"
               exit 1
             fi
@@ -155,13 +142,13 @@ jobs:
         run: |
           echo "### README Update Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f "${output_file}" ]; then
-            echo "${output_file} generated successfully" >> $GITHUB_STEP_SUMMARY
+          if [ -f "${{ env.main_readme }}" ]; then
+            echo "${{ env.main_readme }} generated successfully" >> $GITHUB_STEP_SUMMARY
           else
-            echo "${output_file} generation failed" >> $GITHUB_STEP_SUMMARY
+            echo "${{ env.main_readme }} generation failed" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ -f "${output_pdf}" ]; then
-            echo "${output_pdf} generated successfully" >> $GITHUB_STEP_SUMMARY
+          if [ -f "${{ env.pdf_from_resume_md }}" ]; then
+            echo "${{ env.pdf_from_resume_md }} generated successfully" >> $GITHUB_STEP_SUMMARY
           else
-            echo "${output_pdf} generation failed" >> $GITHUB_STEP_SUMMARY
+            echo "${{ env.pdf_from_resume_md }} generation failed" >> $GITHUB_STEP_SUMMARY
           fi
