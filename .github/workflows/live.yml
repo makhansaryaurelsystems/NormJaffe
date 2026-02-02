@@ -30,6 +30,7 @@ jobs:
       SITE_PATH: "assets/site/content/"
       OUTPUT_PATH: "assets/site/view/"
       CSS_PATH: "assets/site/style/css/v01/"
+      PY_PATH: "assets/builders/"
     if: success() #&& false # Disable this job for now
     steps:
       - name: Checkout repository
@@ -50,7 +51,7 @@ jobs:
         run: |
           echo "Generating HTML files from README.md..."
 
-          python ${{ env.SITE_PATH }}builders/static_site_generator_2.py
+          python ${{ env.PY_PATH }}static_site_generator_2.py
           
           echo "HTML generation complete!"
       
