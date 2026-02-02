@@ -20,6 +20,10 @@ jobs:
   update-readme:
     name: Update README.md and Resume.pdf
     runs-on: ubuntu-latest
+    env:
+      output_file: 'README.md'
+      output_pdf: 'Resume.pdf'
+      output_file_dummy: 'Resume_dummy.md'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,8 +37,7 @@ jobs:
 
           input_dir="assets/for_readme/"
 
-          output_file="README.md" # Final README file
-          output_file_dummy="Resume_dummy.md" # For PDF generation 
+          # Variables output_file and output_file_dummy are defined in job env 
 
           # Array of markdown files to concatenate
           #files=(
@@ -101,7 +104,7 @@ jobs:
         with:
           args: >-
             --from=gfm
-            --output=Resume.pdf
+            --output=${{ env.output_pdf }}
             --pdf-engine=xelatex
             --include-in-header=header.tex
             --variable=geometry:a4paper
@@ -113,12 +116,12 @@ jobs:
             --highlight-style=tango
             --standalone
             --fail-if-warnings
-            Resume_dummy.md
+            ${{ env.output_file_dummy }}
 
       - name: Check for changes
         id: check_changes
         run: |
-          git diff --exit-code README.md Resume.pdf || echo "changes=true" >> $GITHUB_OUTPUT
+          git diff --exit-code ${{ env.output_file }} ${{ env.output_pdf }} || echo "changes=true" >> $GITHUB_OUTPUT
      
       - name: Clean up temporary files
         run: |
@@ -132,11 +135,11 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           
-          git add README.md Resume.pdf
+          git add "${output_file}" "${output_pdf}"
           
           staged_files=$(git diff --cached --name-only)
           for staged_file in $staged_files; do
-            if [[ ! "$staged_file" =~ ^(${output_file}|${output_file_dummy})$ ]]; then
+            if [[ ! "$staged_file" =~ ^(${output_file}|${output_pdf})$ ]]; then
               echo "Error: Unexpected file staged: $staged_file"
               exit 1
             fi
@@ -157,8 +160,8 @@ jobs:
           else
             echo "${output_file} generation failed" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ -f "${output_file_dummy}" ]; then
-            echo "${output_file_dummy} generated successfully" >> $GITHUB_STEP_SUMMARY
+          if [ -f "${output_pdf}" ]; then
+            echo "${output_pdf} generated successfully" >> $GITHUB_STEP_SUMMARY
           else
-            echo "${output_file_dummy} generation failed" >> $GITHUB_STEP_SUMMARY
+            echo "${output_pdf} generation failed" >> $GITHUB_STEP_SUMMARY
           fi
