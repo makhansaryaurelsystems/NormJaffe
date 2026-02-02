@@ -55,10 +55,7 @@ class StaticSiteGenerator:
         nav_items = {
             "Home": "index.html",
             "Education": "education.html",
-            "Experience": "experience.html",
-            "Award": "award.html",
-            "Talk": "talk.html",
-            "Openings": "blog.html"
+            "Experience": "experience.html"
         }
         
         nav_html = ""
@@ -209,14 +206,14 @@ class StaticSiteGenerator:
         print("Generating experience page...")
         self.generate_standard_page("experience", "Experience")\
 
-        print("Generating awards page...")
-        self.generate_standard_page("award", "Awards")
+        #print("Generating awards page...")
+        #self.generate_standard_page("award", "Awards")
 
-        print("Generating awards page...")
-        self.generate_standard_page("talk", "Talks")
+        #print("Generating awards page...")
+        #self.generate_standard_page("talk", "Talks")
 
-        print("Generating blog pages...")
-        self.generate_standard_page("blog", "Blog")
+        #print("Generating blog pages...")
+        #self.generate_standard_page("blog", "Blog")
         
         print(f"Website generated successfully in {self.output_path}")
 

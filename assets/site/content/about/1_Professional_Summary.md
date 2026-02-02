@@ -1,0 +1,3 @@
+## Professional Summary
+
+**Senior systems programmer and software engineer** with over **50 years of professional experience** designing, developing, and maintaining **large-scale software systems**, including **process simulation engines, embedded systems, middleware platforms, and operating-system–level tools**. Extensive background in **C++ and systems-level programming**, with deep expertise across **simulation systems, distributed middleware, embedded firmware, and cross-platform desktop applications**, supporting **engineering analysis, data acquisition, system integration, and decision-making** in industrial, academic, and research environments.
