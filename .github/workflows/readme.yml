@@ -1,4 +1,4 @@
-name: read & pdf
+name: readme & pdf
 
 on:
   #push:
@@ -113,7 +113,7 @@ jobs:
             --highlight-style=tango
             --standalone
             --fail-if-warnings
-            ${output_file_dummy}
+            Resume_dummy.md
 
       - name: Check for changes
         id: check_changes
