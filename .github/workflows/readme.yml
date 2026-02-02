@@ -35,7 +35,7 @@ jobs:
       
       - name: Build README files from markdown files
         run: |
-          set -euo pipef  ail
+          set -euo pipefail
 
           # Automatically find and sort markdown files by their numeric prefix (00_, 01_, etc.)
           files=($(find "${{ env.input_dir }}" -name "*.md" -type f -printf "%f\n" | sort -V))
@@ -126,7 +126,7 @@ jobs:
           echo "Staged files: $staged_files"
 
           for staged_file in $staged_files; do
-            if [[ ! "$staged_file" =~ ^(${env.main_readme}|${env.pdf_from_resume_md})$ ]]; then
+             if [[ ! "$staged_file" =~ ^(${{ env.main_readme }}|${{ env.pdf_from_resume_md }})$ ]]; then
               echo "Error: Unexpected file staged: $staged_file"
               exit 1
             fi
